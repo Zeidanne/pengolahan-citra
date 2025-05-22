@@ -23,10 +23,8 @@ def get_selement(se_type, size):
                                 borderValue=0)
         se = (warped > 0).astype(np.uint8)
     else:
-        # default square 3x3
         se = square(3)
 
-    # pastikan binary 0/1 uint8
     return (se > 0).astype(np.uint8)
 
 def process_image(in_path, out_path, method, se_type=None, se_size=None):

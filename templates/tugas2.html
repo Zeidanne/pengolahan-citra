@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Pengolahan Citra</title>
+        <title>Pengolahan Citra - Tugas 2</title>
         <link
             rel="stylesheet"
             href="{{ url_for('static', filename='css/style.css') }}"
@@ -22,30 +22,45 @@
 
         <main id="content-nonindex">
             <div class="bio-container">
+                {% if original_image_filename_from_session %}
+                <div class="current-image-info" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; background-color: #f9f9f9;">
+                    <h4>Gambar Saat Ini</h4>
+                    <img src="{{ url_for('uploaded_file', filename=original_image_filename_from_session) }}" alt="Current Active Image" style="max-width: 200px; max-height: 200px; border: 1px solid #ddd; margin-bottom: 10px; display: block;">
+                </div>
+                {% endif %}
+
                 <form
                     id="upload-form"
                     method="POST"
-                    action="/upload_tugas2"
+                    action="{{ url_for('upload_tugas2') }}"
                     enctype="multipart/form-data"
                 >
                     <div class="form-group">
-                        <label for="image">Pilih Gambar:</label>
+                        <label for="image">
+                            {% if original_image_filename_from_session %}
+                                Unggah Gambar Baru (Opsional):
+                            {% else %}
+                                Pilih Gambar:
+                            {% endif %}
+                        </label>
                         <input
                             type="file"
                             id="image"
                             name="image"
                             accept="image/*"
-                            required
+                            {% if not original_image_filename_from_session %}required{% endif %}
                         />
+                        {% if original_image_filename_from_session %}
+                        {% endif %}
                     </div>
 
                     <div class="form-group">
                         <label for="method">Pilih Metode Pengolahan:</label>
                         <select id="method" name="method" required>
-                            <option value="sobel">Sobel</option>
-                            <option value="prewitt">Prewitt</option>
-                            <option value="roberts">Roberts</option>
-                            <option value="canny">Canny</option>
+                            <option value="sobel" {% if method == 'Sobel' %}selected{% endif %}>Sobel</option>
+                            <option value="prewitt" {% if method == 'Prewitt' %}selected{% endif %}>Prewitt</option>
+                            <option value="roberts" {% if method == 'Roberts' %}selected{% endif %}>Roberts</option>
+                            <option value="canny" {% if method == 'Canny' %}selected{% endif %}>Canny</option>
                         </select>
                     </div>
 
@@ -53,26 +68,28 @@
                         Proses Citra
                     </button>
                 </form>
-                <!-- Preview -->
-                <div id="preview-container" {% if processed_url %}style="display: none;"{% endif %}>
-                    <h3>Preview Citra:</h3>
-                    <img id="preview" src="#" alt="Preview">
+                
+                <div id="preview-container" style="display: none; margin-top: 20px;">
+                    <h3>Preview Citra Baru:</h3>
+                    <img id="preview" src="#" alt="Preview Unggahan Baru" style="max-width: 300px; max-height: 300px; border: 1px solid #ddd;">
                 </div>
 
-                <!-- Hasil -->
-                <div class="image-comparison" {% if not processed_url %}style="display: none;"{% endif %}>
+                <!-- {% if original_url and processed_url %} -->
+                <div class="image-comparison" style="margin-top: 20px;">
                     <div class="image-box">
                         <h3>Citra Asli</h3>
-                    <img src="{{ url_for('uploaded_file', filename=original_url) }}" alt="Original">
-                </div>
+                        <img src="{{ url_for('uploaded_file', filename=original_url) }}" alt="Original">
+                    </div>
 
-                <div class="image-box">
-                    <h3>Hasil Pengolahan Metode {{ method }}</h3>
-                    <img src="{{ url_for('uploaded_file', filename=processed_url) }}" alt="Hasil">
+                    <div class="image-box">
+                        <h3>Hasil Pengolahan Metode {{ method }}</h3>
+                        <img src="{{ url_for('uploaded_file', filename=processed_url) }}" alt="Hasil {{ method }}">
+                    </div>
                 </div>
+                <!-- {% endif %} -->
             </div>
         </main>
 
         <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    </body>
+        </body>
 </html>

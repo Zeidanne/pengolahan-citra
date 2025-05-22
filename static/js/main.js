@@ -1,22 +1,37 @@
-const imageInput = document.getElementById("image");
-if (imageInput) {
-    imageInput.addEventListener("change", function (e) {
-        const previewContainer = document.getElementById("preview-container");
-        const comparison = document.querySelector(".image-comparison");
-
-        if (previewContainer) previewContainer.style.display = "block";
-        if (comparison) comparison.style.display = "none";
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const preview = document.getElementById("preview");
-            if (preview) preview.src = e.target.result;
-        };
-        reader.readAsDataURL(this.files[0]);
-    });
-}
-
 document.addEventListener("DOMContentLoaded", function () {
+    const imageInput = document.getElementById("image");
+    const previewContainer = document.getElementById("preview-container");
+    const previewImage = document.getElementById("preview");
+    const imageComparisonContainer = document.querySelector(".image-comparison");
+    const currentImageInfo = document.querySelector(".current-image-info");
+
+    if (imageInput) {
+        imageInput.addEventListener("change", function (e) {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    if (previewImage) {
+                        previewImage.src = event.target.result;
+                    }
+                    if (previewContainer) {
+                        previewContainer.style.display = "block";
+                    }
+                    if (imageComparisonContainer) {
+                        imageComparisonContainer.style.display = "none";
+                    }
+                };
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                if (previewImage) {
+                    previewImage.src = "#";
+                }
+                if (previewContainer) {
+                    previewContainer.style.display = "none";
+                }
+            }
+        });
+    }
+
     const seTypeSelect = document.getElementById("se_type");
     const seSizeLabel = document.getElementById("se_size_label");
     const seSizeInput = document.getElementById("se_size");
@@ -46,9 +61,11 @@ document.addEventListener("DOMContentLoaded", function () {
             const selected = seTypeSelect.value;
             seSizeLabel.innerText = seLabelHints[selected] || "Ukuran Elemen:";
             seSizeInput.placeholder = sePlaceholders[selected] || "5";
-            seSizeInput.value = sePlaceholders[selected] || "5";
+            seSizeInput.value = sePlaceholders[selected] || "";
         });
 
-        seTypeSelect.dispatchEvent(new Event("change"));
+        if(seTypeSelect.value) {
+            seTypeSelect.dispatchEvent(new Event("change"));
+        }
     }
 });

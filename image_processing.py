@@ -54,7 +54,7 @@ def process_image(in_path, out_path, method, se_type=None, se_size=None):
             boundary = cv2.subtract(img_bin, eroded)
             res = boundary
 
-    elif method in ('skeletonizing', 'thinning','thickening', 'pruning', 'regionfilling', 'convexhull'):
+    elif method in ('skeletonizing', 'thinning','thickening', 'pruning', 'regionfilling'):
         _, img_bin = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
         if method == 'skeletonizing':
             mask = img_bin > 0
@@ -85,11 +85,6 @@ def process_image(in_path, out_path, method, se_type=None, se_size=None):
             mask = img_bin > 0
             filled = binary_fill_holes(mask)
             res = (filled.astype(np.uint8)) * 255
-        elif method == 'convexhull':
-            mask = img_bin > 0
-            ch = convex_hull_image(mask)
-            res = (ch.astype(np.uint8)) * 255
-
         
     elif method == 'sobel':
         sx = cv2.Sobel(img, cv2.CV_64F, 1, 0)

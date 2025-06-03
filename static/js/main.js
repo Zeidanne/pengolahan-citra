@@ -40,14 +40,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const seSizeLabel    = document.getElementById("se_size_label");
     const seSizeInput    = document.getElementById("se_size");
 
-    // Daftar method yang MEMBUTUHKAN pilihan Elemen Struktural
     const methodsWithSE = [
         "opening",
         "closing",
         "boundary"
     ];
 
-    // Placeholder dan hint untuk masing‐masing jenis SE
     const sePlaceholders = {
         disk:      "5",
         diamond:   "3",
@@ -68,34 +66,28 @@ document.addEventListener("DOMContentLoaded", function () {
         sphere:    "Ukuran Elemen (radius, contoh: 3)"
     };
 
-    // Fungsi untuk men‐toggle visibility SE options
     function toggleSeOptions() {
         const selectedMethod = methodSelect.value;
         if (methodsWithSE.includes(selectedMethod)) {
             seOptionsDiv.style.display = "block";
-            // wajibkan input SE ketika ditampilkan
             seTypeSelect.setAttribute("required", "required");
             seSizeInput.setAttribute("required", "required");
         } else {
             seOptionsDiv.style.display = "none";
-            // hilangkan keharusan jika tidak pakai SE
             seTypeSelect.removeAttribute("required");
             seSizeInput.removeAttribute("required");
         }
     }
 
-    // Ketika dropdown metode berubah
     if (methodSelect && seOptionsDiv) {
         methodSelect.addEventListener("change", function () {
             toggleSeOptions();
         });
-        // Saat halaman pertama kali dimuat, cek jika ada method ter‐select (edit mode)
         if (methodSelect.value) {
             toggleSeOptions();
         }
     }
 
-    // Atur placeholder & label size berdasarkan tipe SE terpilih
     if (seTypeSelect && seSizeLabel && seSizeInput) {
         seTypeSelect.addEventListener("change", function () {
             const sel = seTypeSelect.value;
@@ -103,7 +95,6 @@ document.addEventListener("DOMContentLoaded", function () {
             seSizeInput.placeholder = sePlaceholders[sel] || "5";
             seSizeInput.value = sePlaceholders[sel] || "";
         });
-        // Trigger pengaturan awal jika se_type sudah ada nilai (saat edit)
         if (seTypeSelect.value) {
             seTypeSelect.dispatchEvent(new Event("change"));
         }

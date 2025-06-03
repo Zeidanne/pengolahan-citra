@@ -212,7 +212,6 @@ def upload_tugas3():
 
 @app.route('/upload_tugas4', methods=['POST'])
 def upload_tugas4():
-    # Logika upload identik dengan upload_tugas3, tapi memakai key tugas4
     original_filename_to_process = None
 
     if 'image' in request.files and request.files['image'].filename != '':
@@ -226,7 +225,6 @@ def upload_tugas4():
         original_filename_to_process = session['original_image_tugas4_filename']
         original_path = os.path.join(app.config['UPLOAD_FOLDER'], original_filename_to_process)
         if not os.path.exists(original_path):
-            # Jika gambar lama hilang, buang session dan minta upload ulang
             session.pop('original_image_tugas4_filename', None)
             session.pop('original_url_tugas4', None)
             session.pop('processed_url_tugas4', None)
@@ -243,24 +241,19 @@ def upload_tugas4():
 
     final_original_path = os.path.join(app.config['UPLOAD_FOLDER'], original_filename_to_process)
     base_filename_for_output = original_filename_to_process.replace("original_tugas4_", "")
-    # Nama output: <method>_<se_type>_<originalname> (atau tanpa se jika tak dipakai)
     if se_type:
         output_filename = f"{method_key}_{se_type}_{base_filename_for_output}"
     else:
         output_filename = f"{method_key}_{base_filename_for_output}"
     output_path = os.path.join(app.config['UPLOAD_FOLDER'], output_filename)
 
-    # Parsing ukuran SE (jika ada)
     se_size_parsed = None
     if se_type and se_size_str:
         try:
             se_size_parsed = eval(se_size_str)
         except:
-            # fallback default jika parsing gagal
             se_size_parsed = 3 if se_type in ['disk', 'diamond', 'square', 'octagon', 'sphere'] else [5, 5]
 
-    # Panggil fungsi proses. Pastikan image_processing.py sudah mendukung semua method berikut:
-    # boundary, skeletonizing, thickening, regionfilling, convexhull, pruning, thinning, opening, closing
     process_image(final_original_path, output_path, method_key, se_type, se_size_parsed)
 
     # Simpan session dan render kembali halaman

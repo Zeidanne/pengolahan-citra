@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
-from skimage.morphology import disk, diamond, rectangle, square, octagon, ball
+from skimage.morphology import (disk, diamond, rectangle, square, octagon, skeletonize, thin, convex_hull_image)
+from scipy.ndimage import binary_fill_holes
 
 def get_selement(se_type, size):
     if se_type == 'disk':
@@ -41,6 +42,55 @@ def process_image(in_path, out_path, method, se_type=None, se_size=None):
         else:
             res = cv2.dilate(img_bin, se, iterations=1)
 
+    elif method in ('opening', 'closing', 'boundary'):
+        _, img_bin = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
+        se = get_selement(se_type, se_size)
+        if method == 'opening':
+            res = cv2.morphologyEx(img_bin, cv2.MORPH_OPEN, se)
+        elif method == 'closing':
+            res = cv2.morphologyEx(img_bin, cv2.MORPH_CLOSE, se)
+        elif method == 'boundary':
+            eroded = cv2.erode(img_bin, se, iterations=1)
+            boundary = cv2.subtract(img_bin, eroded)
+            res = boundary
+
+    elif method in ('skeletonizing', 'thinning','thickening', 'pruning', 'regionfilling', 'convexhull'):
+        _, img_bin = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
+        if method == 'skeletonizing':
+            mask = img_bin > 0
+            skel_bool = skeletonize(mask)
+            res = (skel_bool.astype(np.uint8)) * 255
+        elif method == 'thinning':
+            mask = img_bin > 0
+            thin_bool = thin(mask)
+            res = (thin_bool.astype(np.uint8)) * 255
+        elif method == 'thickening':
+            A = img_bin > 0
+            A_comp = np.logical_not(A)
+            thin_comp = thin(A_comp)
+            thick_bool = np.logical_or(A, np.logical_not(thin_comp))
+            res = (thick_bool.astype(np.uint8)) * 255
+        elif method == 'pruning':
+            mask = img_bin > 0
+            skel_bool = skeletonize(mask)
+            skel_u8 = (skel_bool.astype(np.uint8))
+            kernel = np.ones((3, 3), dtype=np.uint8)
+            neighbor_sum = cv2.filter2D(skel_u8, ddepth=-1, kernel=kernel)
+            neighbor_count = neighbor_sum - skel_u8
+            endpoints = np.logical_and(skel_u8 == 1, neighbor_count == 1)
+            pruned = skel_u8.copy()
+            pruned[endpoints] = 0
+            res = (pruned.astype(np.uint8)) * 255
+        elif method == 'regionfilling':
+            mask = img_bin > 0
+            filled = binary_fill_holes(mask)
+            res = (filled.astype(np.uint8)) * 255
+        elif method == 'convexhull':
+            mask = img_bin > 0
+            ch = convex_hull_image(mask)
+            res = (ch.astype(np.uint8)) * 255
+
+        
     elif method == 'sobel':
         sx = cv2.Sobel(img, cv2.CV_64F, 1, 0)
         sy = cv2.Sobel(img, cv2.CV_64F, 0, 1)

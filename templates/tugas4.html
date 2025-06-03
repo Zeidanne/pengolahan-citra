@@ -3,14 +3,15 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Pengolahan Citra - Tugas 3</title> <link
+        <title>Pengolahan Citra - Tugas 4</title>
+        <link
             rel="stylesheet"
             href="{{ url_for('static', filename='css/style.css') }}"
         />
     </head>
     <body>
         <header id="header">
-            <h2>Tugas 3 – Morfologi</h2>
+            <h2>Tugas 4 – Morfologi Lanjutan</h2>
             <nav class="nav-links">
                 <a href="{{ url_for('index') }}">Home</a>
                 <a href="{{ url_for('tugas1') }}">Tugas 1</a>
@@ -31,7 +32,7 @@
 
                 <form id="upload-form"
                     method="POST"
-                    action="{{ url_for('upload_tugas3') }}"
+                    action="{{ url_for('upload_tugas4') }}"
                     enctype="multipart/form-data"
                 >
                     <div class="form-group">
@@ -49,33 +50,50 @@
                             accept="image/*"
                             {% if not original_image_filename_from_session %}required{% endif %}
                         />
-                        </div>
+                    </div>
 
                     <div class="form-group">
                         <label for="method_morfologi">Pilih Operasi Morfologi:</label>
                         <select id="method_morfologi" name="method" required>
-                            <option value="erosi" {% if method == 'Erosi' or method == 'erosi' %}selected{% endif %}>Erosi</option>
-                            <option value="dilasi" {% if method == 'Dilasi' or method == 'dilasi' %}selected{% endif %}>Dilasi</option>
-                            </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="se_type">Pilih Elemen Struktural:</label>
-                        <select id="se_type" name="se_type" required>
-                            <option value="disk" {% if se_type == 'disk' %}selected{% endif %}>Disk</option>
-                            <option value="diamond" {% if se_type == 'diamond' %}selected{% endif %}>Diamond</option>
-                            <option value="line" {% if se_type == 'line' %}selected{% endif %}>Line</option>
-                            <option value="rectangle" {% if se_type == 'rectangle' %}selected{% endif %}>Rectangle</option>
-                            <option value="square" {% if se_type == 'square' %}selected{% endif %}>Square</option>
-                            <option value="octagon" {% if se_type == 'octagon' %}selected{% endif %}>Octagon</option>
-                            <option value="sphere" {% if se_type == 'sphere' %}selected{% endif %}>Sphere</option>
+                            <option value="">-- Pilih Operasi --</option>
+                            <option value="opening"     {% if method == 'opening'     %}selected{% endif %}>Opening</option>
+                            <option value="closing"     {% if method == 'closing'     %}selected{% endif %}>Closing</option>
+                            <option value="boundary"    {% if method == 'boundary'    %}selected{% endif %}>Boundary</option>
+                            <option value="skeletonizing"{% if method == 'skeletonizing'%}selected{% endif %}>Skeletonizing</option>
+                            <option value="thickening"  {% if method == 'thickening'  %}selected{% endif %}>Thickening</option>
+                            <option value="regionfilling"{% if method == 'regionfilling'%}selected{% endif %}>Region Filling</option>
+                            <option value="convexhull"  {% if method == 'convexhull'  %}selected{% endif %}>Convex Hull</option>
+                            <option value="pruning"     {% if method == 'pruning'     %}selected{% endif %}>Pruning</option>
+                            <option value="thinning"    {% if method == 'thinning'    %}selected{% endif %}>Thinning</option>
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label id="se_size_label" for="se_size">Ukuran Elemen:</label>
-                        <input type="text" id="se_size" name="se_size" value="{{ se_size if se_size is not none else '' }}" placeholder="Contoh: 5 atau [10,45]" required />
+                    <div id="se_options" style="display: none;">
+                        <div class="form-group">
+                            <label for="se_type">Pilih Elemen Struktural:</label>
+                            <select id="se_type" name="se_type">
+                                <option value="disk"      {% if se_type == 'disk'     %}selected{% endif %}>Disk</option>
+                                <option value="diamond"   {% if se_type == 'diamond'  %}selected{% endif %}>Diamond</option>
+                                <option value="line"      {% if se_type == 'line'     %}selected{% endif %}>Line</option>
+                                <option value="rectangle" {% if se_type == 'rectangle'%}selected{% endif %}>Rectangle</option>
+                                <option value="square"    {% if se_type == 'square'   %}selected{% endif %}>Square</option>
+                                <option value="octagon"   {% if se_type == 'octagon'  %}selected{% endif %}>Octagon</option>
+                                <option value="sphere"    {% if se_type == 'sphere'   %}selected{% endif %}>Sphere</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label id="se_size_label" for="se_size">Ukuran Elemen:</label>
+                            <input
+                                type="text"
+                                id="se_size"
+                                name="se_size"
+                                value="{{ se_size if se_size is not none else '' }}"
+                                placeholder="Contoh: 5 atau [10,45]"
+                            />
+                        </div>
                     </div>
+
                     <button type="submit" class="btn-proses">Proses Citra</button>
                 </form>
 
@@ -92,8 +110,8 @@
                     </div>
 
                     <div class="image-box">
-                        <h3>Hasil Pengolahan {{ method_display.get(method, method)|capitalize }} - {{ se_type|capitalize }}</h3>
-                        <img src="{{ url_for('uploaded_file', filename=processed_url) }}" alt="Hasil {{ method_display.get(method, method)|capitalize }} {{ se_type|capitalize }}">
+                        <h3>Hasil Pengolahan {{ method_display.get(method, method)|capitalize }}</h3>
+                        <img src="{{ url_for('uploaded_file', filename=processed_url) }}" alt="Hasil {{ method_display.get(method, method)|capitalize }}">
                     </div>
                 </div>
                 {% endif %}

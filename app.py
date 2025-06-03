@@ -55,6 +55,18 @@ def tugas3():
                             se_size=session.get('se_size_tugas3'),
                             method_display=method_display)
 
+@app.route('/tugas4')
+def tugas4():
+    original_image_filename = session.get('original_image_tugas4_filename')
+    return render_template('tugas4.html',
+                            original_image_filename_from_session=original_image_filename,
+                            original_url=session.get('original_url_tugas4'),
+                            processed_url=session.get('processed_url_tugas4'),
+                            method=session.get('method_tugas4'),
+                            se_type=session.get('se_type_tugas4'),
+                            se_size=session.get('se_size_tugas4'),
+                            method_display=method_display)
+
 @app.route('/upload_tugas1', methods=['POST'])
 def upload_tugas1():
     original_filename_to_process = None
@@ -198,6 +210,74 @@ def upload_tugas3():
                             original_image_filename_from_session=original_filename_to_process,
                             method_display=method_display)
 
+@app.route('/upload_tugas4', methods=['POST'])
+def upload_tugas4():
+    # Logika upload identik dengan upload_tugas3, tapi memakai key tugas4
+    original_filename_to_process = None
+
+    if 'image' in request.files and request.files['image'].filename != '':
+        f = request.files['image']
+        original_filename = f"original_tugas4_{f.filename}"
+        original_path = os.path.join(app.config['UPLOAD_FOLDER'], original_filename)
+        f.save(original_path)
+        session['original_image_tugas4_filename'] = original_filename
+        original_filename_to_process = original_filename
+    elif session.get('original_image_tugas4_filename'):
+        original_filename_to_process = session['original_image_tugas4_filename']
+        original_path = os.path.join(app.config['UPLOAD_FOLDER'], original_filename_to_process)
+        if not os.path.exists(original_path):
+            # Jika gambar lama hilang, buang session dan minta upload ulang
+            session.pop('original_image_tugas4_filename', None)
+            session.pop('original_url_tugas4', None)
+            session.pop('processed_url_tugas4', None)
+            session.pop('method_tugas4', None)
+            session.pop('se_type_tugas4', None)
+            session.pop('se_size_tugas4', None)
+            return "Error: Gambar sebelumnya tidak ditemukan. Silakan unggah lagi.", 400
+    else:
+        return "Tidak ada gambar yang dipilih. Silakan unggah gambar.", 400
+
+    method_key = request.form['method']
+    se_type   = request.form.get('se_type')
+    se_size_str = request.form.get('se_size')
+
+    final_original_path = os.path.join(app.config['UPLOAD_FOLDER'], original_filename_to_process)
+    base_filename_for_output = original_filename_to_process.replace("original_tugas4_", "")
+    # Nama output: <method>_<se_type>_<originalname> (atau tanpa se jika tak dipakai)
+    if se_type:
+        output_filename = f"{method_key}_{se_type}_{base_filename_for_output}"
+    else:
+        output_filename = f"{method_key}_{base_filename_for_output}"
+    output_path = os.path.join(app.config['UPLOAD_FOLDER'], output_filename)
+
+    # Parsing ukuran SE (jika ada)
+    se_size_parsed = None
+    if se_type and se_size_str:
+        try:
+            se_size_parsed = eval(se_size_str)
+        except:
+            # fallback default jika parsing gagal
+            se_size_parsed = 3 if se_type in ['disk', 'diamond', 'square', 'octagon', 'sphere'] else [5, 5]
+
+    # Panggil fungsi proses. Pastikan image_processing.py sudah mendukung semua method berikut:
+    # boundary, skeletonizing, thickening, regionfilling, convexhull, pruning, thinning, opening, closing
+    process_image(final_original_path, output_path, method_key, se_type, se_size_parsed)
+
+    # Simpan session dan render kembali halaman
+    session['original_url_tugas4'] = original_filename_to_process
+    session['processed_url_tugas4'] = output_filename
+    session['method_tugas4'] = method_key
+    session['se_type_tugas4'] = se_type
+    session['se_size_tugas4'] = se_size_parsed
+
+    return render_template('tugas4.html',
+                            original_url=original_filename_to_process,
+                            processed_url=output_filename,
+                            method=method_key,
+                            se_type=se_type,
+                            se_size=se_size_parsed,
+                            original_image_filename_from_session=original_filename_to_process,
+                            method_display=method_display)
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
